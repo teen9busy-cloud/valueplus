@@ -179,7 +179,7 @@ function showToast(message) {
 }
 
 /* ==========================================================================
-   인터랙티브 데모 모달 제어 (시모니 1.0 & 학생정신건강 전담센터)
+   인터랙티브 데모 모달 제어 (시모니 1.0 & 기관 맞춤형 웹/ERP 원브릿지)
    ========================================================================== */
 
 function openDemoModal(type) {
@@ -511,7 +511,7 @@ function simulateStampApproval() {
 }
 
 /* ==========================================================================
-   학생정신건강 전담센터 ERP 대화형 시연 엔진
+   기관·기업 맞춤형 통합 웹 & 관리자 ERP (OneBridge) 대화형 시연 엔진
    ========================================================================== */
 
 function setStudentRole(role) {
@@ -521,16 +521,19 @@ function setStudentRole(role) {
 
   const banner = document.getElementById('studentRoleGuide');
   if (role === 'dr') {
-    banner.innerHTML = '🩺 <strong>센터장(소아청소년정신과 전문의) 권한:</strong> 전체 위기현황 총괄, C-SSRS 고위험군 진료 연계, 전문의 자문 소견 등록 및 교육청 최종 보고서 승인이 가능합니다.';
-    showToast('🩺 센터장(소아청소년정신과 전문의) 권한으로 전환되었습니다.');
+    banner.innerHTML = '👑 <strong>최고관리자(Executive) 권한:</strong> 전체 사업 현황 총괄, 중점 관리 프로젝트 지정, 예산 승인 및 대외 기관 최종 실적 보고서 승인이 가능합니다.';
+    showToast('👑 최고관리자(Executive) 권한으로 전환되었습니다.');
   } else if (role === 'psych') {
-    banner.innerHTML = '🧠 <strong>1급 정신건강임상심리사 권한:</strong> AMPQ-II, K-BDI-II, RCMAS 심리검사 등록, Cut-off 기반 실시간 자동 수치화, 엑셀 대용량 일괄 업로드 파싱 권한이 부여됩니다.';
-    showToast('🧠 1급 정신건강임상심리사 권한으로 전환되었습니다.');
+    banner.innerHTML = '🏢 <strong>부서/팀 관리자(Manager) 권한:</strong> 부서별 KPI 지표 검토, 리스크 실시간 모니터링, 엑셀 대용량 일괄 업로드 파싱 및 데이터 승인 권한이 부여됩니다.';
+    showToast('🏢 부서/팀 관리자(Manager) 권한으로 전환되었습니다.');
   } else if (role === 'social') {
-    banner.innerHTML = '🤝 <strong>1급 정신건강사회복지사 권한:</strong> 경남 18개 시군 학교(Wee클래스) 초기 내담자 접수 등록 및 대면/전화/방문 모니터링 일지 작성 권한이 부여됩니다.';
-    showToast('🤝 1급 정신건강사회복지사 권한으로 전환되었습니다.');
+    banner.innerHTML = '💼 <strong>현장 실무자(Operator) 권한:</strong> 사업 단위 데이터 입력, 참여자/고객 접수 등록 및 업무 일지 작성 권한이 부여됩니다.';
+    showToast('💼 현장 실무자(Operator) 권한으로 전환되었습니다.');
   }
 }
+
+// 하위 호환 및 가독성을 위한 별칭 제공
+const setPlatformRole = setStudentRole;
 
 function updateScoringSim() {
   const bdi = parseInt(document.getElementById('inputBdi')?.value || '24', 10);
@@ -548,7 +551,7 @@ function updateScoringSim() {
   if (gaugeBdi) {
     const bdiPct = Math.min(100, Math.round((bdi / 40) * 100));
     gaugeBdi.style.width = `${bdiPct}%`;
-    gaugeBdi.className = bdi >= 29 ? 'gauge-fill severe' : (bdi >= 20 ? 'gauge-fill warn' : 'gauge-fill');
+    gaugeBdi.className = bdi >= 29 ? 'gauge-fill' : (bdi >= 20 ? 'gauge-fill' : 'gauge-fill warn');
   }
 
   if (gaugeCssrs) {
@@ -560,24 +563,40 @@ function updateScoringSim() {
   const badge = document.getElementById('simStatusBadge');
   const desc = document.getElementById('simStatusDesc');
 
-  if (cssrs >= 4) {
-    badge.className = 'status-badge-severe';
-    badge.textContent = '🚨 [긴급 최우선 개입] 자살위기 고위험군';
-    desc.textContent = 'C-SSRS 4단계 이상으로 즉각적인 전문의 진료 연계 및 교육청 위기 안전망 긴급 보고 대상입니다.';
-  } else if (bdi >= 29) {
-    badge.className = 'status-badge-severe';
-    badge.textContent = '🚨 중증 우울 위기군';
-    desc.textContent = 'K-BDI-II 29점 이상(중증)으로 전문의 심층 자문 및 집중 모니터링이 개시됩니다.';
-  } else if (bdi >= 20 || cssrs >= 2) {
-    badge.className = 'status-badge-severe';
-    badge.style.backgroundColor = '#fef3c7';
-    badge.style.color = '#92400e';
-    badge.textContent = '⚠️ 주의군 (우선관리 대상)';
-    desc.textContent = '경도~중등도 정서행동 문제를 보이며 주 1회 상담 및 사전-사후 호전 추적 검사가 권장됩니다.';
-  } else {
-    badge.className = 'status-badge-normal';
-    badge.textContent = '일반군 (정상 안정)';
-    desc.textContent = '주요 척도 점수가 절단점(Cut-off) 이내로 일상적 학교생활 적응 상태입니다.';
+  if (badge && desc) {
+    // 이전 인라인 스타일 초기화
+    badge.style.backgroundColor = '';
+    badge.style.color = '';
+
+    if (cssrs >= 4) {
+      badge.className = 'status-badge-severe';
+      badge.textContent = '🚨 [긴급 최우선 관리] 리스크 초과 경보';
+      desc.textContent = '리스크 4단계 이상으로 최고관리자 즉각 보고 및 긴급 대책반 가동 대상입니다.';
+    } else if (cssrs >= 2) {
+      badge.className = 'status-badge-severe';
+      badge.style.backgroundColor = '#fef3c7';
+      badge.style.color = '#92400e';
+      badge.textContent = '⚠️ 주의군 (집중 리스크 관리 대상)';
+      desc.textContent = '리스크 요인이 상승하여 주간 진척 회의 안건 상정 및 전담 PM 피드백이 제공됩니다.';
+    } else if (bdi >= 29) {
+      badge.className = 'status-badge-normal';
+      badge.style.backgroundColor = '#d1fae5';
+      badge.style.color = '#065f46';
+      badge.textContent = '✨ 우수 성과 달성군 (조기 달성)';
+      desc.textContent = '목표 달성 점수 29점 이상으로 조기 초과 달성 및 우수 기관 표창 추천 대상입니다.';
+    } else if (bdi >= 20) {
+      badge.className = 'status-badge-normal';
+      badge.style.backgroundColor = '#ecfdf5';
+      badge.style.color = '#047857';
+      badge.textContent = '정상 안정 (안정 진척)';
+      desc.textContent = '모든 핵심 지표가 목표 범위 내에서 안정적으로 진척 중입니다.';
+    } else {
+      badge.className = 'status-badge-severe';
+      badge.style.backgroundColor = '#fef3c7';
+      badge.style.color = '#92400e';
+      badge.textContent = '📋 진척 보강 필요군';
+      desc.textContent = '목표 달성률이 기준 점수(20점) 미만으로 추가 업무 지원 및 일정 보강이 권장됩니다.';
+    }
   }
 }
 
@@ -587,7 +606,7 @@ function simulateExcelUpload() {
 
   if (preview.style.display === 'none' || preview.style.display === '') {
     preview.style.display = 'block';
-    showToast('📊 [엑셀 파서] 경남 18개 시·군 50건 검사지가 0.4초 만에 자동 수치화 및 DB 적재 완료되었습니다.');
+    showToast('📊 [엑셀 파서] 50건 사업 실적 데이터가 0.4초 만에 자동 수치화 및 DB 적재 완료되었습니다.');
   } else {
     preview.style.display = 'none';
     showToast('📁 엑셀 프리뷰가 접혔습니다.');
